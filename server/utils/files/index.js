@@ -188,7 +188,14 @@ async function purgeSourceDocument(filename = null) {
 
   console.log(`Purging source document of ${filename}.`);
   fs.rmSync(filePath);
+
+  //purge the original file name removing the .json extension
+  const originalFilePath = filePath.replace(".json", "");
+  if (fs.existsSync
+    (originalFilePath)) fs.rmSync(originalFilePath);
   return;
+
+  
 }
 
 // Purges a vector-cache file from the vector-cache/ folder.

@@ -48,7 +48,7 @@ async function asPdf({ fullFilePath = "", filename = "" }) {
   const content = pageContent.join("");
   const data = {
     id: v4(),
-    url: "file://" + fullFilePath,
+    url: 'custom-documents/' + filename, //file url from the server
     title: filename,
     docAuthor: docs[0]?.metadata?.pdf?.info?.Creator || "no author found",
     description: docs[0]?.metadata?.pdf?.info?.Title || "No description found.",
@@ -62,7 +62,7 @@ async function asPdf({ fullFilePath = "", filename = "" }) {
 
   const document = writeToServerDocuments(
     data,
-    `${slugify(filename)}-${data.id}`
+    filename,
   );
   trashFile(fullFilePath);
   console.log(`[SUCCESS]: ${filename} converted & ready for embedding.\n`);

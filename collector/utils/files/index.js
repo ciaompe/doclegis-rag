@@ -106,6 +106,19 @@ function writeToServerDocuments(
     encoding: "utf-8",
   });
 
+  //move original file from collectior/hotdir to server/storage
+  const hotdirPath = path.resolve(__dirname, "../../hotdir");
+  console.log(`Hotdir path: ${hotdirPath}`);
+  console.log('Filename: ', filename);
+
+  const hotdirFilePath = path.resolve(hotdirPath, filename);
+  if (fs.existsSync(hotdirFilePath)) {
+    console.log(`Moving ${filename} to server storage...`);
+    originalDestinationFilePath = path.resolve(destination, filename);
+    fs.renameSync(hotdirFilePath, originalDestinationFilePath);
+  }
+  
+
   return {
     ...data,
     // relative location string that can be passed into the /update-embeddings api

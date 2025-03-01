@@ -17,6 +17,18 @@ async function processSingleFile(targetFilename, options = {}) {
     WATCH_DIRECTORY,
     normalizePath(targetFilename)
   );
+
+
+   //check if file exists in the storage folder and if it does return error
+   const storagePath = path.resolve('../server/storage/documents/custom-documents', targetFilename);
+   if (fs.existsSync(storagePath)) {
+    return {
+      success: false,
+      reason: "File exists in the storage",
+      documents: [],
+    };
+  }
+
   if (!isWithin(path.resolve(WATCH_DIRECTORY), fullFilePath))
     return {
       success: false,
