@@ -3,8 +3,11 @@ const prisma = new PrismaClient();
 
 async function main() {
   const settings = [
-    { label: "multi_user_mode", value: "false" },
-    { label: "logo_filename", value: "anything-llm.png" },
+    { label: "multi_user_mode", value: "true" },
+    { label: "limit_user_messages", value: "false" },
+    { label: "message_limit", value: "25" },
+    { label: "logo_filename", value: "doclegis-logo.png" },
+    { label: "custom_app_name", value: "DocLegis" },
   ];
 
   for (let setting of settings) {
@@ -19,6 +22,28 @@ async function main() {
       });
     }
   }
+
+  // Seeding admin user
+  const adminUser = await prisma.users.findUnique({
+    where: { username: "admin" },
+  });
+
+  if (!adminUser) {
+    await prisma.users.create({
+      data: {
+        id: 1,
+        username: "admin",
+        password: "$2b$10$6RRuamd/bC3N3z9A8VhGbe7WCLlt3OHvdRcZIZf3kkxA/PjVe1pEm", // Hashed password (admin123)
+        role: "admin",
+        seen_recovery_codes: true,
+        createdAt: new Date("2024-10-21 08:40:18.711"),
+        lastUpdatedAt: new Date("2024-10-21 08:40:18.711"),
+      },
+    });
+  } else {
+    console.log("Admin user already exists, skipping creation.");
+  }
+
 }
 
 main()
