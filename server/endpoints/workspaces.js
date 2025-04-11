@@ -922,22 +922,33 @@ function workspaceEndpoints(app) {
           response.locals?.user?.id
         );
 
-        const document = documents[0];
-        const { failedToEmbed = [], errors = [] } = await Document.addDocuments(
+        // Process all documents returned by the collector
+        const documentLocations = documents.map(doc => doc.location);
+        const { failedToEmbed = [], errors = [], embedded = [] } = await Document.addDocuments(
           currWorkspace,
-          [document.location],
+          documentLocations,
           response.locals?.user?.id
         );
 
         if (failedToEmbed.length > 0)
           return response
             .status(200)
-            .json({ success: false, error: errors?.[0], document: null });
+            .json({ 
+              success: false, 
+              error: errors?.[0], 
+              documents: null,
+              failedCount: failedToEmbed.length,
+              embeddedCount: embedded.length
+            });
 
         response.status(200).json({
           success: true,
           error: null,
-          document: { id: document.id, location: document.location },
+          documents: documents.map(doc => ({ 
+            id: doc.id, 
+            location: doc.location 
+          })),
+          embeddedCount: embedded.length
         });
       } catch (e) {
         console.error(e.message, e);

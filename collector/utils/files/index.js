@@ -111,10 +111,12 @@ function writeToServerDocuments(
   console.log(`Hotdir path: ${hotdirPath}`);
   console.log('Filename: ', filename);
 
-  const hotdirFilePath = path.resolve(hotdirPath, filename);
+  const original_filename = filename.split('-page-')[0].replace('.json', '');
+
+  const hotdirFilePath = path.resolve(hotdirPath, original_filename);
   if (fs.existsSync(hotdirFilePath)) {
-    console.log(`Moving ${filename} to server storage...`);
-    originalDestinationFilePath = path.resolve(destination, filename);
+    console.log(`Moving ${original_filename} to server storage...`);
+    originalDestinationFilePath = path.resolve(destination, original_filename);
     fs.renameSync(hotdirFilePath, originalDestinationFilePath);
   }
   

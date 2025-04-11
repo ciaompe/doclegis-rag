@@ -25,14 +25,32 @@ const Document = {
       metadata.chunkSource.slice(0, idx),
       metadata.chunkSource.slice(idx + 3),
     ];
-    return { metadata, type, source: this._stripSource(source, type) };
+    return {
+      metadata,
+      type,
+      source: this._stripSource(source, type)
+    };
   },
 
   forWorkspace: async function (workspaceId = null) {
     if (!workspaceId) return [];
-    return await prisma.workspace_documents.findMany({
+    const documents = await prisma.workspace_documents.findMany({
       where: { workspaceId },
     });
+
+    // Get content for each document using the content function
+    const documentsWithContent = await Promise.all(
+      documents.map(async (doc) => {
+        const contentData = await this.content(doc.docId);
+        return {
+          ...doc,
+          content: contentData.content,
+          title: contentData.title
+        };
+      })
+    );
+
+    return documentsWithContent;
   },
 
   delete: async function (clause = {}) {

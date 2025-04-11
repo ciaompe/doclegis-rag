@@ -25,48 +25,49 @@ async function asPdf({ fullFilePath = "", filename = "" }) {
     docs = await new OCRLoader().ocrPDF(fullFilePath);
   }
 
-  for (const doc of docs) {
-    console.log(
-      `-- Parsing content from pg ${
-        doc.metadata?.loc?.pageNumber || "unknown"
-      } --`
-    );
-    if (!doc.pageContent || !doc.pageContent.length) continue;
-    pageContent.push(doc.pageContent);
-  }
+  console.log(`[DEBUG] Processing ${docs.length} pages from PDF`);
 
-  if (!pageContent.length) {
-    console.error(`[asPDF] Resulting text content was empty for ${filename}.`);
-    trashFile(fullFilePath);
-    return {
-      success: false,
-      reason: `No text content found in ${filename}.`,
-      documents: [],
+  // Create documents for each page
+  const documents = docs.map((doc, index) => {
+    console.log(`[DEBUG] Processing page ${index + 1} of ${docs.length}`);
+    console.log(`[DEBUG] Page number from metadata: ${doc.metadata?.loc?.pageNumber}`);
+    console.log(`[DEBUG] Content length: ${doc.pageContent.length}`);
+
+    const data = {
+      id: v4(),
+      url: 'custom-documents/' + filename,
+      title: filename,
+      docAuthor: doc?.metadata?.pdf?.info?.Creator || "no author found",
+      description: doc?.metadata?.pdf?.info?.Title || "No description found.",
+      docSource: "pdf file uploaded by the user.",
+      chunkSource: "",
+      published: createdDate(fullFilePath),
+      wordCount: doc.pageContent.split(" ").length,
+      pageContent: doc.pageContent,
+      token_count_estimate: tokenizeString(doc.pageContent),
+      loc_pageNumber: doc.metadata?.loc?.pageNumber || null,
+      metadata_pdf_version: doc?.metadata?.pdf?.version || null,
+      metadata_pdf_total_pages: doc?.metadata?.pdf?.totalPages || null,
+      metadata_pdf_creator: doc?.metadata?.pdf?.info?.Creator || null,
+      metadata_pdf_title: doc?.metadata?.pdf?.info?.Title || null,
+      metadata_pdf_author: doc?.metadata?.pdf?.info?.Author || null,
+      metadata_pdf_subject: doc?.metadata?.pdf?.info?.Subject || null,
+      metadata_pdf_keywords: doc?.metadata?.pdf?.info?.Keywords || null,
+      metadata_pdf_producer: doc?.metadata?.pdf?.info?.Producer || null,
+      metadata_pdf_creation_date: doc?.metadata?.pdf?.info?.CreationDate || null,
+      metadata_pdf_modification_date: doc?.metadata?.pdf?.info?.ModDate || null
     };
-  }
 
-  const content = pageContent.join("");
-  const data = {
-    id: v4(),
-    url: 'custom-documents/' + filename, //file url from the server
-    title: filename,
-    docAuthor: docs[0]?.metadata?.pdf?.info?.Creator || "no author found",
-    description: docs[0]?.metadata?.pdf?.info?.Title || "No description found.",
-    docSource: "pdf file uploaded by the user.",
-    chunkSource: "",
-    published: createdDate(fullFilePath),
-    wordCount: content.split(" ").length,
-    pageContent: content,
-    token_count_estimate: tokenizeString(content),
-  };
+    console.log(`[DEBUG] Created document with page number: ${data.loc_pageNumber}`);
+    // Create a unique filename for each document using the page number
+    const uniqueFilename = `${filename}-page-${data.loc_pageNumber || index + 1}-${data.id}`;
+    return writeToServerDocuments(data, uniqueFilename);
+  });
 
-  const document = writeToServerDocuments(
-    data,
-    filename,
-  );
+  console.log(`[DEBUG] Total documents created: ${documents.length}`);
   trashFile(fullFilePath);
   console.log(`[SUCCESS]: ${filename} converted & ready for embedding.\n`);
-  return { success: true, reason: null, documents: [document] };
+  return { success: true, reason: null, documents };
 }
 
 module.exports = asPdf;

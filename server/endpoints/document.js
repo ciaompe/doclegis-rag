@@ -110,6 +110,13 @@ function documentEndpoints(app) {
   //download file from the storage and need to get the file name as parameter
   app.post("/document/download/", async (request, response) => {
     const { docpath } = reqBody(request);
+    if (!docpath) {
+      response.status(500).json({
+        success: false,
+        message: "Invalid file path.",
+      });
+      return;
+    }
     const storagePath = path.join(documentsPath, normalizePath(docpath));
     if (!isWithin(documentsPath, storagePath)) {
       response.status(500).json({
