@@ -127,6 +127,81 @@ function documentEndpoints(app) {
     }
     response.download(storagePath);
   });
+
+  // View file from storage
+  app.get("/document/view", async (request, response) => {
+    try {
+      const { docpath } = request.query;
+      if (!docpath) {
+        response.status(400).json({
+          success: false,
+          message: "Document path is required",
+        });
+        return;
+      }
+
+      const storagePath = path.join(documentsPath, normalizePath(docpath));
+      if (!isWithin(documentsPath, storagePath)) {
+        response.status(403).json({
+          success: false,
+          message: "Invalid file path",
+        });
+        return;
+      }
+
+      if (!fs.existsSync(storagePath)) {
+        response.status(404).json({
+          success: false,
+          message: "File not found",
+        });
+        return;
+      }
+
+      // Get file extension and set appropriate content type
+      const ext = path.extname(storagePath).toLowerCase();
+      const contentType = {
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain',
+        '.json': 'application/json',
+        '.html': 'text/html',
+        '.md': 'text/markdown',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.doc': 'application/msword',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.xls': 'application/vnd.ms-excel',
+        '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        '.ppt': 'application/vnd.ms-powerpoint',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml'
+      }[ext] || 'application/octet-stream';
+
+      // Set headers for file preview
+      response.setHeader('Content-Type', contentType);
+      response.setHeader('Content-Disposition', `inline; filename="${path.basename(storagePath)}"`);
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(storagePath);
+      fileStream.pipe(response);
+      
+      fileStream.on('error', (error) => {
+        console.error('Error streaming file:', error);
+        response.status(500).json({
+          success: false,
+          message: "Error reading file",
+        });
+      });
+
+    } catch (error) {
+      console.error('Error in document view:', error);
+      response.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  });
 }
 
 module.exports = { documentEndpoints };

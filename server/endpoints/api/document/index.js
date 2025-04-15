@@ -14,6 +14,7 @@ const { CollectorApi } = require("../../../utils/collectorApi");
 const fs = require("fs");
 const path = require("path");
 const { Document } = require("../../../models/documents");
+const { Workspace } = require("../../../models/workspace");
 const documentsPath =
   process.env.NODE_ENV === "development"
     ? path.resolve(__dirname, "../../../storage/documents")
@@ -117,6 +118,146 @@ function apiDocumentEndpoints(app) {
           documentName: originalname,
         });
         response.status(200).json({ success: true, error: null, documents });
+      } catch (e) {
+        console.error(e.message, e);
+        response.sendStatus(500).end();
+      }
+    }
+  );
+
+  app.post(
+    "/v1/document/upload-and-embed",
+    [validApiKey, handleAPIFileUpload],
+    async (request, response) => {
+      /*
+      #swagger.tags = ['Documents']
+      #swagger.description = 'Upload a new file to AnythingLLM to be parsed, prepared for embedding, and embedded in one step.'
+      #swagger.requestBody = {
+        description: 'File to be uploaded and embedded.',
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              type: 'object',
+              required: ['file', 'workspaceSlug'],
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                  description: 'The file to upload and embed'
+                },
+                workspaceSlug: {
+                  type: 'string',
+                  description: 'The slug of the workspace to embed the document in'
+                }
+              }
+            }
+          }
+        }
+      }
+      #swagger.responses[200] = {
+        content: {
+          "application/json": {
+            schema: {
+              type: 'object',
+              example: {
+                success: true,
+                error: null,
+                documents: [
+                  {
+                    "id": "6e8be64c-c162-4b43-9997-b068c0071e8b",
+                    "location": "custom-documents/anythingllm.txt-6e8be64c-c162-4b43-9997-b068c0071e8b.json"
+                  }
+                ],
+                embeddedCount: 1
+              }
+            }
+          }
+        }
+      }
+      #swagger.responses[403] = {
+        schema: {
+          "$ref": "#/definitions/InvalidAPIKey"
+        }
+      }
+      */
+      try {
+        const { workspaceSlug } = reqBody(request);
+        if (!workspaceSlug) {
+          response.status(400).json({
+            success: false,
+            error: "workspaceSlug is required in the request body"
+          }).end();
+          return;
+        }
+
+        const workspace = await Workspace.get({ slug: workspaceSlug });
+        if (!workspace) {
+          response.status(404).json({
+            success: false,
+            error: "Workspace not found"
+          }).end();
+          return;
+        }
+
+        const Collector = new CollectorApi();
+        const { originalname } = request.file;
+        const processingOnline = await Collector.online();
+
+        if (!processingOnline) {
+          response
+            .status(500)
+            .json({
+              success: false,
+              error: `Document processing API is not online. Document ${originalname} will not be processed automatically.`,
+            })
+            .end();
+          return;
+        }
+
+        const { success, reason, documents } =
+          await Collector.processDocument(originalname);
+        if (!success || documents?.length === 0) {
+          response.status(500).json({ success: false, error: reason }).end();
+          return;
+        }
+
+        Collector.log(
+          `Document ${originalname} uploaded processed and successfully. It is now available in documents.`
+        );
+        await Telemetry.sendTelemetry("document_uploaded");
+        await EventLogs.logEvent("api_document_uploaded", {
+          documentName: originalname,
+        });
+
+        // Process all documents returned by the collector
+        const documentLocations = documents.map(doc => doc.location);
+        const { failedToEmbed = [], errors = [], embedded = [] } = await Document.addDocuments(
+          workspace,
+          documentLocations,
+          null // No user ID for API uploads
+        );
+
+        if (failedToEmbed.length > 0)
+          return response
+            .status(200)
+            .json({ 
+              success: false, 
+              error: errors?.[0], 
+              documents: null,
+              failedCount: failedToEmbed.length,
+              embeddedCount: embedded.length
+            });
+
+        response.status(200).json({
+          success: true,
+          error: null,
+          documents: documents.map(doc => ({ 
+            id: doc.id, 
+            location: doc.location 
+          })),
+          embeddedCount: embedded.length
+        });
       } catch (e) {
         console.error(e.message, e);
         response.sendStatus(500).end();

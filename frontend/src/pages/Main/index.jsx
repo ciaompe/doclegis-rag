@@ -5,6 +5,8 @@ import PasswordModal, { usePasswordModal } from "@/components/Modals/Password";
 import { isMobile } from "react-device-detect";
 import { FullScreenLoader } from "@/components/Preloader";
 import UserMenu from "@/components/UserMenu";
+import { Navigate } from "react-router-dom";
+import paths from "@/utils/paths";
 
 export default function Main() {
   const { loading, requiresAuth, mode } = usePasswordModal();
@@ -14,10 +16,5 @@ export default function Main() {
     return <>{requiresAuth !== null && <PasswordModal mode={mode} />}</>;
   }
 
-  return (
-    <div className="w-screen h-screen overflow-hidden bg-theme-bg-container flex">
-      {!isMobile && <Sidebar />}
-      <DefaultChatContainer />
-    </div>
-  );
+  return <Navigate to={paths.settings.llmPreference()} replace />;
 }

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
 import { ContextWrapper } from "@/AuthContext";
 import PrivateRoute, {

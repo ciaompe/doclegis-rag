@@ -284,11 +284,11 @@ const Workspace = {
       // Get content for each document
       const documentsWithContent = await Promise.all(
         workspace.documents.map(async (doc) => {
-          const contentData = await Document.content(doc.docId);
+          //const contentData = await Document.content(doc.docId);
           return {
-            ...doc,
-            content: contentData.content,
-            title: contentData.title
+            ...doc
+            // content: "",
+            // title: ""
           };
         })
       );

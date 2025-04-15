@@ -917,6 +917,88 @@
         }
       }
     },
+    "/v1/document/upload-and-embed": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "description": "Upload a new file to AnythingLLM to be parsed, prepared for embedding, and embedded in one step.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": true,
+                    "error": null,
+                    "documents": [
+                      {
+                        "id": "6e8be64c-c162-4b43-9997-b068c0071e8b",
+                        "location": "custom-documents/anythingllm.txt-6e8be64c-c162-4b43-9997-b068c0071e8b.json"
+                      }
+                    ],
+                    "embeddedCount": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidAPIKey"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidAPIKey"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "description": "File to be uploaded and embedded.",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "workspaceSlug"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The file to upload and embed"
+                  },
+                  "workspaceSlug": {
+                    "type": "string",
+                    "description": "The slug of the workspace to embed the document in"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/document/upload/{folderName}": {
       "post": {
         "tags": [
