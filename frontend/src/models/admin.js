@@ -116,11 +116,11 @@ const Admin = {
         return [];
       });
   },
-  newWorkspace: async (name) => {
+  newWorkspace: async ({ name, type = "private" }) => {
     return await fetch(`${API_BASE}/admin/workspaces/new`, {
       method: "POST",
       headers: baseHeaders(),
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, type }),
     })
       .then((res) => res.json())
       .catch((e) => {

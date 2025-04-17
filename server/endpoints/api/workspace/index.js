@@ -29,6 +29,7 @@ function apiWorkspaceEndpoints(app) {
         "application/json": {
           example: {
             name: "My New Workspace",
+            type: "private",
             similarityThreshold: 0.7,
             openAiTemp: 0.7,
             openAiHistory: 20,
@@ -69,11 +70,11 @@ function apiWorkspaceEndpoints(app) {
     }
     */
     try {
-      const { name = null, ...additionalFields } = reqBody(request);
+      const { name = null, type = "private", ...additionalFields } = reqBody(request);
       const { workspace, message } = await Workspace.new(
         name,
         null,
-        additionalFields
+        { type, ...additionalFields }
       );
 
       if (!workspace) {
@@ -288,6 +289,7 @@ function apiWorkspaceEndpoints(app) {
         "application/json": {
           example: {
             "name": 'Updated Workspace Name',
+            "type": "private",
             "openAiTemp": 0.2,
             "openAiHistory": 20,
             "openAiPrompt": "Respond to all inquires and questions in binary - do not respond in any other format."
@@ -326,7 +328,7 @@ function apiWorkspaceEndpoints(app) {
     */
       try {
         const { slug = null } = request.params;
-        const data = reqBody(request);
+        const { type, ...data } = reqBody(request);
         const currWorkspace = await Workspace.get({ slug });
 
         if (!currWorkspace) {
@@ -336,7 +338,7 @@ function apiWorkspaceEndpoints(app) {
 
         const { workspace, message } = await Workspace.update(
           currWorkspace.id,
-          data
+          { type, ...data }
         );
         response.status(200).json({ workspace, message });
       } catch (e) {

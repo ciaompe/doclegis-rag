@@ -1736,6 +1736,7 @@
             "application/json": {
               "example": {
                 "name": "My New Workspace",
+                "type": "private",
                 "similarityThreshold": 0.7,
                 "openAiTemp": 0.7,
                 "openAiHistory": 20,
@@ -1982,6 +1983,7 @@
             "application/json": {
               "example": {
                 "name": "Updated Workspace Name",
+                "type": "private",
                 "openAiTemp": 0.2,
                 "openAiHistory": 20,
                 "openAiPrompt": "Respond to all inquires and questions in binary - do not respond in any other format."

@@ -46,8 +46,8 @@ function workspaceEndpoints(app) {
     async (request, response) => {
       try {
         const user = await userFromSession(request, response);
-        const { name = null, onboardingComplete = false } = reqBody(request);
-        const { workspace, message } = await Workspace.new(name, user?.id);
+        const { name = null, type = "private", onboardingComplete = false } = reqBody(request);
+        const { workspace, message } = await Workspace.new(name, user?.id, { type });
         await Telemetry.sendTelemetry(
           "workspace_created",
           {
@@ -85,7 +85,7 @@ function workspaceEndpoints(app) {
       try {
         const user = await userFromSession(request, response);
         const { slug = null } = request.params;
-        const data = reqBody(request);
+        const { type, ...data } = reqBody(request);
         const currWorkspace = multiUserMode(response)
           ? await Workspace.getWithUser(user, { slug })
           : await Workspace.get({ slug });
@@ -94,10 +94,10 @@ function workspaceEndpoints(app) {
           response.sendStatus(400).end();
           return;
         }
-        await Workspace.trackChange(currWorkspace, data, user);
+        await Workspace.trackChange(currWorkspace, { type, ...data }, user);
         const { workspace, message } = await Workspace.update(
           currWorkspace.id,
-          data
+          { type, ...data }
         );
         response.status(200).json({ workspace, message });
       } catch (e) {

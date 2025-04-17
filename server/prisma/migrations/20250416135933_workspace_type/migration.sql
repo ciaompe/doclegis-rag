@@ -115,6 +115,7 @@ CREATE TABLE "workspaces" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'private',
     "vectorTag" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "openAiTemp" DOUBLE PRECISION,

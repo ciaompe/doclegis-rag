@@ -36,6 +36,15 @@ export default function WorkspaceRow({ workspace, users }) {
           </a>
         </td>
         <td className="px-6 py-4">
+          <span className={`px-2 py-1 rounded-full text-xs ${
+            workspace.type === 'public' 
+              ? 'bg-green-500/20 text-green-500' 
+              : 'bg-blue-500/20 text-blue-500'
+          }`}>
+            {workspace.type}
+          </span>
+        </td>
+        <td className="px-6 py-4">
           <a
             href={paths.workspace.settings.members(workspace.slug)}
             className="text-white flex items-center underline"

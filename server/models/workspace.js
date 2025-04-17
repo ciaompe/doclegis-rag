@@ -19,8 +19,9 @@ const Workspace = {
   // commented fields are not writable, but are available on the db object
   writable: [
     "name",
-    // "slug",
-    // "vectorTag",
+    "description",
+    "slug",
+    "type",
     "openAiTemp",
     "openAiHistory",
     "lastUpdatedAt",
@@ -30,7 +31,7 @@ const Workspace = {
     "chatModel",
     "topN",
     "chatMode",
-    // "pfpFilename",
+    "pfpFilename",
     "agentProvider",
     "agentModel",
     "queryRefusalResponse",
@@ -43,6 +44,10 @@ const Workspace = {
       // as the name field is not nullable in the db schema or has a default value.
       if (!value || typeof value !== "string") return "My Workspace";
       return String(value).slice(0, 255);
+    },
+    type: (value) => {
+      if (!value || !["private", "public"].includes(value)) return "private";
+      return value;
     },
     openAiTemp: (value) => {
       if (value === null || value === undefined) return null;

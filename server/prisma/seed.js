@@ -8,6 +8,9 @@ async function main() {
     { label: "message_limit", value: "25" },
     { label: "logo_filename", value: "doclegis-logo.png" },
     { label: "custom_app_name", value: "DocLegis" },
+    { label: "support_email", value: "info@axistech.it" },
+    { label: "meta_page_title", value: "DocLegis" }
+
   ];
 
   for (let setting of settings) {

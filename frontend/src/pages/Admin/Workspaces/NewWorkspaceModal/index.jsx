@@ -10,7 +10,10 @@ export default function NewWorkspaceModal({ closeModal }) {
     setError(null);
     e.preventDefault();
     const form = new FormData(e.target);
-    const { workspace, error } = await Admin.newWorkspace(form.get("name"));
+    const { workspace, error } = await Admin.newWorkspace({
+      name: form.get("name"),
+      type: form.get("type")
+    });
     if (!!workspace) window.location.reload();
     setError(error);
   };
@@ -51,6 +54,23 @@ export default function NewWorkspaceModal({ closeModal }) {
                   required={true}
                   autoComplete="off"
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="type"
+                  className="block mb-2 text-sm font-medium text-white"
+                >
+                  {t("common.workspaces-type")}
+                </label>
+                <select
+                  name="type"
+                  id="type"
+                  className="border-none bg-theme-settings-input-bg w-full text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
+                  required={true}
+                >
+                  <option value="private">Private</option>
+                  <option value="public">Public</option>
+                </select>
               </div>
               {error && <p className="text-red-400 text-sm">Error: {error}</p>}
               <p className="text-white text-opacity-60 text-xs md:text-sm">

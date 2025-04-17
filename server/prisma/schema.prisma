@@ -123,6 +123,7 @@ model workspaces {
   id                           Int                            @id @default(autoincrement())
   name                         String
   slug                         String                         @unique
+  type                         String                         @default("private")
   vectorTag                    String?
   createdAt                    DateTime                       @default(now())
   openAiTemp                   Float?
